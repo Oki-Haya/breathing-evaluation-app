@@ -1,4 +1,4 @@
-const CACHE = 'breathing-v1';
+const CACHE = 'breathing-v2';
 const PRECACHE = [
   '/',
   '/static/style.css',

@@ -1,31 +1,42 @@
 <div class="card mb-2 session-row">
-  <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center">
-    <div>
-      <span class="fw-semibold">{{ session.session_date }}</span>
-      <span class="badge bg-light text-dark ms-2">{{ session.day_of_week }}曜日</span>
-      {% if session.before_total is not none %}
-      <span class="ms-3 small">
-        Before: <strong>{{ session.before_total }}</strong>点
-        {% if session.after_total is not none %}
-        → After: <strong>{{ session.after_total }}</strong>点
-        {% set diff = session.after_total - session.before_total %}
-        {% if diff > 0 %}
-        <span class="text-success">(+{{ diff }})</span>
-        {% elif diff < 0 %}
-        <span class="text-danger">({{ diff }})</span>
-        {% else %}
-        <span class="text-muted">(±0)</span>
+  <div class="card-body py-2 px-3">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+
+      <!-- 左: 日付・曜日 + Before/After スコア -->
+      <div class="flex-grow-1" style="min-width:0">
+        <div>
+          <span class="fw-semibold">{{ session.session_date }}</span>
+          <span class="badge bg-light text-dark ms-1">{{ session.day_of_week }}曜日</span>
+        </div>
+        {% if session.before_total is not none %}
+        <div class="small mt-1">
+          Before: <strong>{{ session.before_total }}</strong>点
+          {% if session.after_total is not none %}
+          &rarr; After: <strong>{{ session.after_total }}</strong>点
+          {% set diff = session.after_total - session.before_total %}
+          {% if diff > 0 %}
+          <span class="text-success fw-bold">(+{{ diff }})</span>
+          {% elif diff < 0 %}
+          <span class="text-danger fw-bold">({{ diff }})</span>
+          {% else %}
+          <span class="text-muted">(±0)</span>
+          {% endif %}
+          {% endif %}
+        </div>
         {% endif %}
-        {% endif %}
-      </span>
-      {% endif %}
-    </div>
-    <div class="d-flex gap-2">
-      <a href="{{ url_for('session_detail', session_id=session.id) }}" class="btn btn-sm btn-outline-primary">詳細</a>
-      <form method="post" action="{{ url_for('session_delete', session_id=session.id) }}"
-            onsubmit="return confirm('このセッションを削除しますか？')">
-        <button type="submit" class="btn btn-sm btn-outline-danger">削除</button>
-      </form>
+      </div>
+
+      <!-- 右: ボタン（縦に伸びない） -->
+      <div class="d-flex gap-1 flex-shrink-0">
+        <a href="{{ url_for('session_detail', session_id=session.id) }}"
+           class="btn btn-primary" style="min-height:44px;min-width:52px;font-size:0.9rem;">詳細</a>
+        <form method="post" action="{{ url_for('session_delete', session_id=session.id) }}"
+              onsubmit="return confirm('このセッションを削除しますか？')">
+          <button type="submit" class="btn btn-outline-danger"
+                  style="min-height:44px;min-width:52px;font-size:0.9rem;">削除</button>
+        </form>
+      </div>
+
     </div>
   </div>
 </div>

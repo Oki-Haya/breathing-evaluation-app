@@ -1,5 +1,22 @@
 // 採点基準・詳細トグル（全ページ共通）
 document.addEventListener('DOMContentLoaded', () => {
+
+  // セッション内容 編集トグル
+  const notesEditBtn = document.getElementById('notes-edit-btn');
+  const notesCancelBtn = document.getElementById('notes-cancel-btn');
+  if (notesEditBtn) {
+    notesEditBtn.addEventListener('click', function() {
+      document.getElementById('notes-view').classList.add('d-none');
+      document.getElementById('notes-edit').classList.remove('d-none');
+    });
+  }
+  if (notesCancelBtn) {
+    notesCancelBtn.addEventListener('click', function() {
+      document.getElementById('notes-edit').classList.add('d-none');
+      document.getElementById('notes-view').classList.remove('d-none');
+    });
+  }
+
   document.querySelectorAll('.criteria-toggle').forEach(btn => {
     btn.addEventListener('click', () => {
       const target = document.getElementById(btn.dataset.target);

@@ -262,16 +262,6 @@
 
 {% block scripts %}
 <script>
-// セッション内容 編集トグル
-document.getElementById('notes-edit-btn').addEventListener('click', function() {
-  document.getElementById('notes-view').classList.add('d-none');
-  document.getElementById('notes-edit').classList.remove('d-none');
-});
-document.getElementById('notes-cancel-btn').addEventListener('click', function() {
-  document.getElementById('notes-edit').classList.add('d-none');
-  document.getElementById('notes-view').classList.remove('d-none');
-});
-
 const ctx = document.getElementById('radarChart').getContext('2d');
 new Chart(ctx, {
   type: 'radar',
