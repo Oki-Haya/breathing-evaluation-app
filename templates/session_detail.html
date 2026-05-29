@@ -140,14 +140,15 @@
 {% if before and after %}
 <div class="card mb-4">
   <div class="card-header fw-bold">変化の詳細</div>
-  <div class="card-body">
-    <table class="table table-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+    <table class="table table-sm mb-0">
       <thead>
         <tr>
-          <th>項目</th>
+          <th class="ps-3">項目</th>
           <th class="text-center">Before</th>
           <th class="text-center">After</th>
-          <th class="text-center">変化</th>
+          <th class="text-center pe-3">変化</th>
         </tr>
       </thead>
       <tbody>
@@ -205,6 +206,7 @@
         </tr>
       </tfoot>
     </table>
+    </div><!-- /table-responsive -->
   </div>
 </div>
 {% endif %}

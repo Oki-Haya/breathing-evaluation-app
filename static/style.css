@@ -1,6 +1,8 @@
 body {
   background-color: #f8f9fa;
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+  /* iOS ホームバー分の余白 */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .navbar-brand {
@@ -24,9 +26,14 @@ body {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-/* 採点ボタン */
+/* ========================================
+   採点ボタン（0 / 2 / 4）
+   ======================================== */
 .score-group .btn {
-  min-width: 48px;
+  min-width: 56px;
+  min-height: 44px;      /* タッチターゲット */
+  font-size: 1rem;
+  padding: 6px 8px;
 }
 .btn-check:checked + .score-label.score-4 {
   background-color: #198754;
@@ -44,20 +51,30 @@ body {
   color: #fff;
 }
 
-/* 採点基準テーブル */
+/* ========================================
+   採点基準テーブル
+   ======================================== */
 .criteria-table td {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   vertical-align: top;
 }
+
+/* 「詳細を見る」トグル — タップしやすく */
 .criteria-toggle {
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   text-decoration: none;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 0;
 }
 .criteria-toggle:hover {
   color: #495057 !important;
 }
 
-/* セクションタイトル */
+/* ========================================
+   セクションタイトル
+   ======================================== */
 .section-title {
   color: #495057;
   font-size: 0.85rem;
@@ -75,7 +92,15 @@ body {
 /* 動作アイテム間の区切り */
 .movement-item + .movement-item {
   border-top: 1px solid #f0f0f0;
-  padding-top: 8px;
+  padding-top: 10px;
+}
+
+/* 動作ラベル＋スコアボタン行 */
+.movement-score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
 }
 
 /* 詳細セクション */
@@ -117,4 +142,96 @@ body {
 .detail-reason-highlight {
   border-left-color: #fd7e14;
   background-color: #fff3e0;
+}
+
+/* ========================================
+   保存ボタン固定バー（フォーム下部）
+   ======================================== */
+.sticky-submit {
+  position: sticky;
+  bottom: 0;
+  background: rgba(248, 249, 250, 0.97);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid #dee2e6;
+  margin-top: 8px;
+  z-index: 100;
+}
+
+/* ========================================
+   スマホ専用調整
+   ======================================== */
+@media (max-width: 767.98px) {
+
+  /* iOS フォームズーム防止 */
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* コンテナの余白を少し詰める */
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  /* パンくずを小さく */
+  .breadcrumb {
+    font-size: 0.8rem;
+  }
+
+  /* 動作ラベル＋スコアボタン: 縦積みで全幅 */
+  .movement-score-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .movement-score-row .score-group {
+    width: 100%;
+    display: flex;
+  }
+  .movement-score-row .score-group .btn {
+    flex: 1;
+    min-width: 0;
+    font-size: 1rem;
+    min-height: 48px;
+  }
+
+  /* カードのパディング調整 */
+  .card-body {
+    padding: 14px;
+  }
+  .card-header {
+    padding: 10px 14px;
+  }
+
+  /* スコアサマリーを少し大きく */
+  .score-summary {
+    font-size: 1rem;
+  }
+
+  /* セッション行のリンクを大きく */
+  .session-row a {
+    display: block;
+    padding: 4px 0;
+  }
+
+  /* クライアント追加ボタン */
+  .btn-primary {
+    min-height: 44px;
+  }
+
+  /* 保存ボタンを全幅に */
+  .sticky-submit .btn {
+    width: 100%;
+    min-height: 52px;
+    font-size: 1.1rem;
+  }
+  .sticky-submit .d-flex {
+    flex-direction: column;
+    gap: 8px !important;
+  }
 }

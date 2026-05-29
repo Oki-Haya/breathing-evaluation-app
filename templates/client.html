@@ -13,7 +13,7 @@
     <h2 class="mb-0">{{ client.name }}</h2>
     <span class="text-muted small">セッション数: {{ sessions|length }}件</span>
   </div>
-  <a href="{{ url_for('session_new', client_id=client.id) }}" class="btn btn-primary">
+  <a href="{{ url_for('session_new', client_id=client.id) }}" class="btn btn-primary" style="min-height:44px;display:flex;align-items:center;">
     + 新規セッション記録
   </a>
 </div>

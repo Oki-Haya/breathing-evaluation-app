@@ -26,10 +26,10 @@
         </p>
       </div>
       <div class="card-footer d-flex justify-content-between align-items-center bg-transparent">
-        <a href="{{ url_for('client_detail', client_id=client.id) }}" class="btn btn-sm btn-outline-primary">詳細を見る</a>
+        <a href="{{ url_for('client_detail', client_id=client.id) }}" class="btn btn-outline-primary" style="min-height:44px;display:flex;align-items:center;">詳細を見る</a>
         <form method="post" action="{{ url_for('client_delete', client_id=client.id) }}"
               onsubmit="return confirm('{{ client.name }} を削除しますか？（全セッションも削除されます）')">
-          <button type="submit" class="btn btn-sm btn-outline-danger">削除</button>
+          <button type="submit" class="btn btn-outline-danger" style="min-height:44px;">削除</button>
         </form>
       </div>
     </div>

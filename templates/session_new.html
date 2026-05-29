@@ -47,7 +47,7 @@
           <h6 class="fw-bold mb-3 section-title">身体の動作</h6>
           {% for m in movements %}
           <div class="mb-3 movement-item">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="movement-score-row">
               <span class="fw-semibold">{{ m.label }}</span>
               <div class="btn-group score-group" role="group">
                 {% for score in [0, 2, 4] %}
@@ -56,7 +56,7 @@
                        id="{{ etype }}_{{ m.key }}_{{ score }}"
                        value="{{ score }}"
                        {% if score == 0 %}checked{% endif %}>
-                <label class="btn btn-sm btn-outline-secondary score-label score-{{ score }}"
+                <label class="btn btn-outline-secondary score-label score-{{ score }}"
                        for="{{ etype }}_{{ m.key }}_{{ score }}">{{ score }}点</label>
                 {% endfor %}
               </div>
@@ -215,9 +215,11 @@
     </div>
   </div>
 
-  <div class="d-flex gap-2">
-    <button type="submit" class="btn btn-primary btn-lg">保存する</button>
-    <a href="{{ url_for('client_detail', client_id=client.id) }}" class="btn btn-outline-secondary btn-lg">キャンセル</a>
+  <div class="sticky-submit">
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary btn-lg">保存する</button>
+      <a href="{{ url_for('client_detail', client_id=client.id) }}" class="btn btn-outline-secondary btn-lg">キャンセル</a>
+    </div>
   </div>
 </form>
 {% endblock %}
