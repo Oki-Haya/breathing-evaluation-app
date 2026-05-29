@@ -14,7 +14,6 @@
   <div>
     <h2 class="mb-0">{{ session.session_date }} <span class="badge bg-light text-dark">{{ session.day_of_week }}曜日</span></h2>
     <p class="text-muted mb-0">{{ client.name }}</p>
-    {% if session.notes %}<p class="text-muted small mt-1">{{ session.notes }}</p>{% endif %}
   </div>
   <form method="post" action="{{ url_for('session_delete', session_id=session.id) }}"
         onsubmit="return confirm('このセッションを削除しますか？')">
@@ -206,6 +205,27 @@
         </tr>
       </tfoot>
     </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- セッション内容 -->
+{% if session.exercise_notes or session.notes %}
+<div class="card mb-4 border-success">
+  <div class="card-header bg-success text-white fw-bold">セッション内容</div>
+  <div class="card-body">
+    {% if session.exercise_notes %}
+    <div class="mb-3">
+      <div class="fw-semibold mb-1">実施したエクササイズ・手技</div>
+      <p class="mb-0 text-body" style="white-space:pre-wrap">{{ session.exercise_notes }}</p>
+    </div>
+    {% endif %}
+    {% if session.notes %}
+    <div class="mb-0">
+      <div class="fw-semibold mb-1">メモ</div>
+      <p class="mb-0 text-body" style="white-space:pre-wrap">{{ session.notes }}</p>
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endif %}

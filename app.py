@@ -78,7 +78,8 @@ def session_new(client_id):
         session_date = request.form.get("session_date") or str(date.today())
         day_of_week = request.form.get("day_of_week", "")
         notes = request.form.get("notes", "")
-        session_id = db.create_session(client_id, session_date, day_of_week, notes)
+        exercise_notes = request.form.get("exercise_notes", "")
+        session_id = db.create_session(client_id, session_date, day_of_week, notes, exercise_notes)
 
         for etype in ("before", "after"):
             fields = {}

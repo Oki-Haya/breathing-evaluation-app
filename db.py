@@ -101,8 +101,18 @@ def init_db():
                 stmt = stmt.strip()
                 if stmt:
                     cur.execute(stmt)
+            # マイグレーション: exercise_notes カラムを追加（既存DBへの対応）
+            try:
+                cur.execute('ALTER TABLE sessions ADD COLUMN IF NOT EXISTS exercise_notes TEXT')
+            except Exception:
+                pass
         else:
             conn.executescript(_SCHEMA_SQLITE)
+            # マイグレーション: exercise_notes カラムを追加（既存DBへの対応）
+            try:
+                conn.execute('ALTER TABLE sessions ADD COLUMN exercise_notes TEXT')
+            except Exception:
+                pass
         conn.commit()
     finally:
         conn.close()
@@ -184,13 +194,13 @@ def get_session(session_id):
         conn.close()
 
 
-def create_session(client_id, session_date, day_of_week, notes=''):
+def create_session(client_id, session_date, day_of_week, notes='', exercise_notes=''):
     conn = get_conn()
     try:
         row_id = _insert(
             conn,
-            'INSERT INTO sessions (client_id, session_date, day_of_week, notes) VALUES (?, ?, ?, ?)',
-            (client_id, session_date, day_of_week, notes),
+            'INSERT INTO sessions (client_id, session_date, day_of_week, notes, exercise_notes) VALUES (?, ?, ?, ?, ?)',
+            (client_id, session_date, day_of_week, notes, exercise_notes),
         )
         conn.commit()
         return row_id

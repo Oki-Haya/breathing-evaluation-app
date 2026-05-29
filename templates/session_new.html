@@ -29,10 +29,6 @@
             {% endfor %}
           </select>
         </div>
-        <div class="col-md-4">
-          <label class="form-label fw-semibold">メモ</label>
-          <input type="text" name="notes" class="form-control" placeholder="任意">
-        </div>
       </div>
     </div>
   </div>
@@ -202,7 +198,24 @@
     {% endfor %}
   </div>
 
-  <div class="mt-4 d-flex gap-2">
+  <!-- セッション内容 -->
+  <div class="card mb-4 border-success mt-4">
+    <div class="card-header bg-success text-white fw-bold fs-5">セッション内容</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label class="form-label fw-semibold">実施したエクササイズ・手技</label>
+        <textarea name="exercise_notes" class="form-control" rows="4"
+                  placeholder="例: 横隔膜リリース、肋間筋ストレッチ..."></textarea>
+      </div>
+      <div class="mb-0">
+        <label class="form-label fw-semibold">メモ</label>
+        <textarea name="notes" class="form-control" rows="3"
+                  placeholder="気づいたこと、クライアントの反応など..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
     <button type="submit" class="btn btn-primary btn-lg">保存する</button>
     <a href="{{ url_for('client_detail', client_id=client.id) }}" class="btn btn-outline-secondary btn-lg">キャンセル</a>
   </div>
