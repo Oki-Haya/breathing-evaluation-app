@@ -208,6 +208,17 @@ def create_session(client_id, session_date, day_of_week, notes='', exercise_note
         conn.close()
 
 
+def update_session_notes(session_id, notes, exercise_notes):
+    conn = get_conn()
+    try:
+        _exec(conn,
+              'UPDATE sessions SET notes = ?, exercise_notes = ? WHERE id = ?',
+              (notes, exercise_notes, session_id))
+        conn.commit()
+    finally:
+        conn.close()
+
+
 def delete_session(session_id):
     conn = get_conn()
     try:

@@ -151,6 +151,17 @@ def session_detail(session_id):
     )
 
 
+@app.route("/sessions/<int:session_id>/update_notes", methods=["POST"])
+def session_update_notes(session_id):
+    session = db.get_session(session_id)
+    if not session:
+        return redirect(url_for("index"))
+    notes = request.form.get("notes", "")
+    exercise_notes = request.form.get("exercise_notes", "")
+    db.update_session_notes(session_id, notes, exercise_notes)
+    return redirect(url_for("session_detail", session_id=session_id))
+
+
 @app.route("/sessions/<int:session_id>/delete", methods=["POST"])
 def session_delete(session_id):
     session = db.get_session(session_id)

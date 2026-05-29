@@ -209,32 +209,67 @@
 </div>
 {% endif %}
 
-<!-- セッション内容 -->
-{% if session.exercise_notes or session.notes %}
+<!-- セッション内容（編集可） -->
 <div class="card mb-4 border-success">
-  <div class="card-header bg-success text-white fw-bold">セッション内容</div>
-  <div class="card-body">
+  <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+    <span>セッション内容</span>
+    <button type="button" class="btn btn-sm btn-outline-light" id="notes-edit-btn">編集</button>
+  </div>
+  <!-- 表示モード -->
+  <div class="card-body" id="notes-view">
     {% if session.exercise_notes %}
     <div class="mb-3">
       <div class="fw-semibold mb-1">実施したエクササイズ・手技</div>
       <p class="mb-0 text-body" style="white-space:pre-wrap">{{ session.exercise_notes }}</p>
     </div>
+    {% else %}
+    <div class="mb-3 text-muted small">実施したエクササイズ・手技：未入力</div>
     {% endif %}
     {% if session.notes %}
     <div class="mb-0">
       <div class="fw-semibold mb-1">メモ</div>
       <p class="mb-0 text-body" style="white-space:pre-wrap">{{ session.notes }}</p>
     </div>
+    {% else %}
+    <div class="mb-0 text-muted small">メモ：未入力</div>
     {% endif %}
   </div>
+  <!-- 編集モード -->
+  <div class="card-body d-none" id="notes-edit">
+    <form method="post" action="{{ url_for('session_update_notes', session_id=session.id) }}">
+      <div class="mb-3">
+        <label class="form-label fw-semibold">実施したエクササイズ・手技</label>
+        <textarea name="exercise_notes" class="form-control" rows="4"
+                  placeholder="例: 横隔膜リリース、肋間筋ストレッチ...">{{ session.exercise_notes or '' }}</textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">メモ</label>
+        <textarea name="notes" class="form-control" rows="3"
+                  placeholder="気づいたこと、クライアントの反応など...">{{ session.notes or '' }}</textarea>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success">保存する</button>
+        <button type="button" class="btn btn-outline-secondary" id="notes-cancel-btn">キャンセル</button>
+      </div>
+    </form>
+  </div>
 </div>
-{% endif %}
 
 <a href="{{ url_for('client_detail', client_id=client.id) }}" class="btn btn-outline-secondary">← 戻る</a>
 {% endblock %}
 
 {% block scripts %}
 <script>
+// セッション内容 編集トグル
+document.getElementById('notes-edit-btn').addEventListener('click', function() {
+  document.getElementById('notes-view').classList.add('d-none');
+  document.getElementById('notes-edit').classList.remove('d-none');
+});
+document.getElementById('notes-cancel-btn').addEventListener('click', function() {
+  document.getElementById('notes-edit').classList.add('d-none');
+  document.getElementById('notes-view').classList.remove('d-none');
+});
+
 const ctx = document.getElementById('radarChart').getContext('2d');
 new Chart(ctx, {
   type: 'radar',
