@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+{% block title %}新規セッション - {{ client.name }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">クライアント一覧</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('client_detail', client_id=client.id) }}">{{ client.name }}</a></li>
+    <li class="breadcrumb-item active">新規セッション</li>
+  </ol>
+</nav>
+
+<h2 class="mb-4">新規セッション記録 — {{ client.name }}</h2>
+
+<form method="post">
+  <!-- 日付・曜日 -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">日付</label>
+          <input type="date" name="session_date" class="form-control" value="{{ today }}" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">曜日</label>
+          <select name="day_of_week" class="form-select" required>
+            {% for d in day_options %}
+            <option value="{{ d }}" {% if d == today_dow %}selected{% endif %}>{{ d }}曜日</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">メモ</label>
+          <input type="text" name="notes" class="form-control" placeholder="任意">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Before / After -->
+  <div class="row g-4">
+    {% for etype, label, color in [('before', 'Before', 'primary'), ('after', 'After', 'danger')] %}
+    <div class="col-lg-6">
+      <div class="card border-{{ color }}">
+        <div class="card-header bg-{{ color }} text-white fw-bold fs-5">
+          {{ label }}
+        </div>
+        <div class="card-body">
+
+          <!-- 身体の動作 -->
+          <h6 class="fw-bold mb-3 section-title">身体の動作</h6>
+          {% for m in movements %}
+          <div class="mb-3 movement-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="fw-semibold">{{ m.label }}</span>
+              <div class="btn-group score-group" role="group">
+                {% for score in [0, 2, 4] %}
+                <input type="radio" class="btn-check score-radio"
+                       name="{{ etype }}_{{ m.key }}"
+                       id="{{ etype }}_{{ m.key }}_{{ score }}"
+                       value="{{ score }}"
+                       {% if score == 0 %}checked{% endif %}>
+                <label class="btn btn-sm btn-outline-secondary score-label score-{{ score }}"
+                       for="{{ etype }}_{{ m.key }}_{{ score }}">{{ score }}点</label>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- 詳細情報アコーディオン -->
+            <div class="criteria-box mt-1">
+              <button type="button" class="btn btn-link btn-sm p-0 text-muted criteria-toggle"
+                      data-target="{{ etype }}_{{ m.key }}_criteria">
+                詳細を見る ▾
+              </button>
+              <div class="criteria-content d-none" id="{{ etype }}_{{ m.key }}_criteria">
+                <!-- 目的 -->
+                <div class="detail-section mt-2">
+                  <div class="detail-section-label">評価の目的</div>
+                  <ul class="mb-0 ps-3 small">
+                    {% for p in m.purpose %}
+                    <li>{{ p }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                <!-- 指示 -->
+                <div class="detail-section mt-2">
+                  <div class="detail-section-label">クライアントへの指示</div>
+                  <p class="mb-0 small fst-italic">{{ m.instruction }}</p>
+                </div>
+                <!-- 採点基準 -->
+                <div class="detail-section mt-2">
+                  <div class="detail-section-label">採点基準</div>
+                  <table class="table table-sm table-bordered mb-0 criteria-table">
+                    <tbody>
+                      <tr class="table-success">
+                        <td class="fw-bold text-center" style="width:40px">4点</td>
+                        <td>{{ m.criteria[4] }}</td>
+                      </tr>
+                      <tr class="table-warning">
+                        <td class="fw-bold text-center">2点</td>
+                        <td>{{ m.criteria[2] }}</td>
+                      </tr>
+                      <tr class="table-danger">
+                        <td class="fw-bold text-center">0点</td>
+                        <td>{{ m.criteria[0] }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <!-- 2点の理由 -->
+                <div class="detail-section mt-2">
+                  <div class="detail-section-label">惜しい！2点の原因・メカニズム</div>
+                  <ul class="mb-0 ps-3 small">
+                    {% for r in m.reason_2 %}
+                    <li>{{ r }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+
+          <hr>
+
+          <!-- 呼吸数 -->
+          <h6 class="fw-bold mb-2 section-title">呼吸数</h6>
+          <div class="mb-1">
+            <div class="input-group" style="max-width:180px">
+              <input type="number" name="{{ etype }}_breathing_count"
+                     class="form-control breathing-count-input"
+                     data-prefix="{{ etype }}"
+                     placeholder="例: 12" step="0.5" min="0">
+              <span class="input-group-text">回/分</span>
+            </div>
+          </div>
+          <div class="text-muted small mb-1" id="{{ etype }}_rate_score_label">スコア: —</div>
+          <div class="collapse" id="{{ etype }}_rate_guide">
+            <table class="table table-sm table-bordered mt-1 criteria-table">
+              <tbody>
+                {% for low, high, sc in breathing_rate_score %}
+                <tr>
+                  <td>
+                    {% if high == none or high > 9999 %}{{ low }}回〜
+                    {% else %}{{ low }}〜{{ high }}回{% endif %}
+                  </td>
+                  <td class="fw-bold text-end">{{ sc }}点</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="btn btn-link btn-sm p-0 text-muted"
+                  data-bs-toggle="collapse" data-bs-target="#{{ etype }}_rate_guide">
+            基準を見る ▾
+          </button>
+
+          <hr>
+
+          <!-- 呼吸動作 -->
+          <h6 class="fw-bold mb-2 section-title">呼吸動作</h6>
+          {% for bt in breathing_types %}
+          <div class="form-check">
+            <input class="form-check-input breathing-type-radio"
+                   type="radio" name="{{ etype }}_breathing_type"
+                   id="{{ etype }}_{{ bt.key }}"
+                   value="{{ bt.key }}"
+                   data-score="{{ bt.score }}"
+                   data-prefix="{{ etype }}">
+            <label class="form-check-label" for="{{ etype }}_{{ bt.key }}">
+              {{ bt.label }}
+              <span class="badge bg-secondary ms-1">{{ bt.score }}点</span>
+            </label>
+          </div>
+          {% endfor %}
+
+          <hr>
+
+          <!-- 小計 -->
+          <div class="score-summary p-2 rounded mt-2">
+            <div class="d-flex justify-content-between small text-muted">
+              <span>身体動作</span>
+              <span id="{{ etype }}_body_score">0</span>/40点
+            </div>
+            <div class="d-flex justify-content-between small text-muted">
+              <span>呼吸数</span>
+              <span id="{{ etype }}_rate_score">—</span>点
+            </div>
+            <div class="d-flex justify-content-between small text-muted">
+              <span>呼吸動作</span>
+              <span id="{{ etype }}_type_score">—</span>点
+            </div>
+            <div class="d-flex justify-content-between fw-bold border-top pt-1 mt-1">
+              <span>合計</span>
+              <span id="{{ etype }}_total_score">0</span>/100点
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="mt-4 d-flex gap-2">
+    <button type="submit" class="btn btn-primary btn-lg">保存する</button>
+    <a href="{{ url_for('client_detail', client_id=client.id) }}" class="btn btn-outline-secondary btn-lg">キャンセル</a>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const RATE_TABLE = [
+  [1, 3, 30], [3.5, 6, 25], [6.5, 10, 20],
+  [10.5, 15, 15], [15.5, 20, 10], [20.5, Infinity, 5]
+];
+
+function rateScore(v) {
+  if (!v && v !== 0) return null;
+  for (const [lo, hi, sc] of RATE_TABLE) {
+    if (v >= lo && v <= hi) return sc;
+  }
+  return null;
+}
+
+function updateTotal(prefix) {
+  let body = 0;
+  document.querySelectorAll(`.score-radio[name^="${prefix}_"]:checked`).forEach(r => {
+    if (!r.name.includes('breathing')) body += parseInt(r.value);
+  });
+
+  const countEl = document.querySelector(`.breathing-count-input[data-prefix="${prefix}"]`);
+  const rateVal = countEl ? parseFloat(countEl.value) : null;
+  const rateSc = rateScore(rateVal);
+
+  const typeEl = document.querySelector(`.breathing-type-radio[data-prefix="${prefix}"]:checked`);
+  const typeSc = typeEl ? parseInt(typeEl.dataset.score) : null;
+
+  document.getElementById(`${prefix}_body_score`).textContent = body;
+  document.getElementById(`${prefix}_rate_score`).textContent = rateSc !== null ? rateSc : '—';
+  document.getElementById(`${prefix}_type_score`).textContent = typeSc !== null ? typeSc : '—';
+  document.getElementById(`${prefix}_rate_score_label`).textContent =
+    rateSc !== null ? `スコア: ${rateSc}点` : 'スコア: —';
+
+  const total = body + (rateSc || 0) + (typeSc || 0);
+  document.getElementById(`${prefix}_total_score`).textContent = total;
+}
+
+['before', 'after'].forEach(prefix => {
+  document.querySelectorAll(`.score-radio[name^="${prefix}_"]`).forEach(el => {
+    el.addEventListener('change', () => updateTotal(prefix));
+  });
+  const countEl = document.querySelector(`.breathing-count-input[data-prefix="${prefix}"]`);
+  if (countEl) countEl.addEventListener('input', () => updateTotal(prefix));
+  document.querySelectorAll(`.breathing-type-radio[data-prefix="${prefix}"]`).forEach(el => {
+    el.addEventListener('change', () => updateTotal(prefix));
+  });
+  updateTotal(prefix);
+});
+
+</script>
+{% endblock %}

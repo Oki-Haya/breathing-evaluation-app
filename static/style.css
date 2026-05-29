@@ -1,0 +1,120 @@
+body {
+  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+}
+
+.navbar-brand {
+  font-size: 1.1rem;
+  letter-spacing: 0.03em;
+}
+
+/* クライアントカード */
+.client-card {
+  transition: box-shadow 0.15s;
+}
+.client-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+/* セッション行 */
+.session-row {
+  transition: box-shadow 0.1s;
+}
+.session-row:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* 採点ボタン */
+.score-group .btn {
+  min-width: 48px;
+}
+.btn-check:checked + .score-label.score-4 {
+  background-color: #198754;
+  border-color: #198754;
+  color: #fff;
+}
+.btn-check:checked + .score-label.score-2 {
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #000;
+}
+.btn-check:checked + .score-label.score-0 {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: #fff;
+}
+
+/* 採点基準テーブル */
+.criteria-table td {
+  font-size: 0.8rem;
+  vertical-align: top;
+}
+.criteria-toggle {
+  font-size: 0.75rem;
+  text-decoration: none;
+}
+.criteria-toggle:hover {
+  color: #495057 !important;
+}
+
+/* セクションタイトル */
+.section-title {
+  color: #495057;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 4px;
+}
+
+/* スコアサマリーボックス */
+.score-summary {
+  background-color: #e9ecef;
+}
+
+/* 動作アイテム間の区切り */
+.movement-item + .movement-item {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 8px;
+}
+
+/* 詳細セクション */
+.detail-section {
+  background: #f8f9fa;
+  border-left: 3px solid #adb5bd;
+  border-radius: 0 4px 4px 0;
+  padding: 6px 10px;
+}
+.detail-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6c757d;
+  margin-bottom: 4px;
+}
+.detail-section:has(.detail-section-label + ul) {
+  border-left-color: #6c757d;
+}
+/* 目的: 青 */
+.detail-section:nth-of-type(1) { border-left-color: #0d6efd; }
+/* 指示: 緑 */
+.detail-section:nth-of-type(2) { border-left-color: #198754; }
+/* 採点基準: グレー */
+.detail-section:nth-of-type(3) { border-left-color: #6c757d; }
+/* 2点の理由: オレンジ */
+.detail-section:nth-of-type(4) { border-left-color: #fd7e14; }
+
+/* セッション詳細画面の動作行 */
+.movement-detail-row {
+  border-bottom: 1px solid #f0f0f0;
+}
+.movement-detail-row:last-of-type {
+  border-bottom: none;
+}
+
+/* 2点のとき理由セクションを強調 */
+.detail-reason-highlight {
+  border-left-color: #fd7e14;
+  background-color: #fff3e0;
+}

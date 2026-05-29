@@ -1,0 +1,10 @@
+breathing.db
+__pycache__/
+*.pyc
+*.pyo
+.env
+.vercel
+*.egg-info/
+dist/
+build/
+.DS_Store
