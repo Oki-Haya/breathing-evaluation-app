@@ -105,19 +105,29 @@ def init_db():
     try:
         if USE_POSTGRES:
             cur = conn.cursor()
+            # テーブル作成（新規テーブルのみ作成される）
             for stmt in _SCHEMA_POSTGRES.split(';'):
                 stmt = stmt.strip()
                 if stmt:
                     cur.execute(stmt)
-            # マイグレーション
-            for migration in [
+            conn.commit()
+
+            # マイグレーション: PostgreSQL ではセーブポイントを使い
+            # 1件失敗してもトランザクションが死なないようにする
+            migrations = [
                 'ALTER TABLE sessions ADD COLUMN IF NOT EXISTS exercise_notes TEXT',
                 'ALTER TABLE clients ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id)',
-            ]:
+                # 別ユーザーが同名クライアントを登録できるよう UNIQUE 制約を除去
+                'ALTER TABLE clients DROP CONSTRAINT IF EXISTS clients_name_key',
+            ]
+            for migration in migrations:
                 try:
+                    cur.execute('SAVEPOINT mig')
                     cur.execute(migration)
+                    cur.execute('RELEASE SAVEPOINT mig')
                 except Exception:
-                    pass
+                    cur.execute('ROLLBACK TO SAVEPOINT mig')
+            conn.commit()
         else:
             conn.executescript(_SCHEMA_SQLITE)
             # マイグレーション
@@ -129,7 +139,7 @@ def init_db():
                     conn.execute(migration)
                 except Exception:
                     pass
-        conn.commit()
+            conn.commit()
     finally:
         conn.close()
 
