@@ -266,11 +266,11 @@ const ctx = document.getElementById('radarChart').getContext('2d');
 new Chart(ctx, {
   type: 'radar',
   data: {
-    labels: {{ radar_labels }},
+    labels: {{ radar_labels | tojson }},
     datasets: [
       {
         label: 'Before',
-        data: {{ before_radar }},
+        data: {{ before_radar | tojson }},
         borderColor: 'rgba(13, 110, 253, 0.8)',
         backgroundColor: 'rgba(13, 110, 253, 0.15)',
         pointBackgroundColor: 'rgba(13, 110, 253, 1)',
@@ -278,7 +278,7 @@ new Chart(ctx, {
       },
       {
         label: 'After',
-        data: {{ after_radar }},
+        data: {{ after_radar | tojson }},
         borderColor: 'rgba(220, 53, 69, 0.8)',
         backgroundColor: 'rgba(220, 53, 69, 0.15)',
         pointBackgroundColor: 'rgba(220, 53, 69, 1)',

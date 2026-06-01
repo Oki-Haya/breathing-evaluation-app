@@ -1,4 +1,3 @@
-import json
 import os
 from datetime import date
 
@@ -218,9 +217,9 @@ def session_detail(session_id):
         after=after_dict,
         movements=scoring.BODY_MOVEMENTS,
         breathing_types=scoring.BREATHING_TYPES,
-        before_radar=json.dumps(before_radar),
-        after_radar=json.dumps(after_radar),
-        radar_labels=json.dumps(radar_labels),
+        before_radar=before_radar,
+        after_radar=after_radar,
+        radar_labels=radar_labels,
         before_type_label=before_type_label,
         after_type_label=after_type_label,
     )
