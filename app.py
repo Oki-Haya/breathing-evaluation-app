@@ -1,26 +1,95 @@
 import json
+import os
 from datetime import date
 
 from flask import Flask, redirect, render_template, request, url_for
+from flask import session as flask_session
+from werkzeug.security import check_password_hash, generate_password_hash
 
 import db
 import scoring
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-only-insecure-key')
 
 DAY_OF_WEEK_OPTIONS = ["月", "火", "水", "木", "金", "土", "日"]
+
+# 認証不要なエンドポイント
+_PUBLIC_ENDPOINTS = {'login', 'register', 'static'}
+
+
+def _uid():
+    """ログイン中ユーザーのIDを返す"""
+    return flask_session.get('user_id')
+
+
+def _owns_client(client):
+    """クライアントが現在のユーザーのものかチェック"""
+    return client and client.get('user_id') == _uid()
 
 
 @app.before_request
 def setup():
     db.init_db()
+    if request.endpoint in _PUBLIC_ENDPOINTS or request.endpoint is None:
+        return
+    if not _uid():
+        return redirect(url_for('login'))
+
+
+# --- 認証 ---
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if _uid():
+        return redirect(url_for('index'))
+    error = None
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        user = db.get_user_by_username(username)
+        if user and check_password_hash(user['password_hash'], password):
+            flask_session['user_id'] = user['id']
+            flask_session['username'] = user['username']
+            return redirect(url_for('index'))
+        error = 'ユーザー名またはパスワードが正しくありません'
+    return render_template('login.html', error=error)
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if _uid():
+        return redirect(url_for('index'))
+    error = None
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        if not username or not password:
+            error = 'ユーザー名とパスワードを入力してください'
+        elif len(password) < 6:
+            error = 'パスワードは6文字以上にしてください'
+        elif db.get_user_by_username(username):
+            error = 'そのユーザー名は既に使用されています'
+        else:
+            db.create_user(username, generate_password_hash(password))
+            user = db.get_user_by_username(username)
+            flask_session['user_id'] = user['id']
+            flask_session['username'] = user['username']
+            return redirect(url_for('index'))
+    return render_template('register.html', error=error)
+
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    flask_session.clear()
+    return redirect(url_for('login'))
 
 
 # --- トップ: クライアント一覧 ---
 
 @app.route("/")
 def index():
-    clients = db.get_all_clients()
+    clients = db.get_all_clients(_uid())
     return render_template("index.html", clients=clients)
 
 
@@ -28,12 +97,15 @@ def index():
 def client_new():
     name = request.form.get("name", "").strip()
     if name:
-        db.create_client(name)
+        db.create_client(name, _uid())
     return redirect(url_for("index"))
 
 
 @app.route("/clients/<int:client_id>/delete", methods=["POST"])
 def client_delete(client_id):
+    client = db.get_client(client_id)
+    if not _owns_client(client):
+        return redirect(url_for("index"))
     db.delete_client(client_id)
     return redirect(url_for("index"))
 
@@ -43,7 +115,7 @@ def client_delete(client_id):
 @app.route("/clients/<int:client_id>")
 def client_detail(client_id):
     client = db.get_client(client_id)
-    if not client:
+    if not _owns_client(client):
         return redirect(url_for("index"))
     sessions = db.get_client_sessions(client_id)
 
@@ -71,7 +143,7 @@ def client_detail(client_id):
 @app.route("/clients/<int:client_id>/sessions/new", methods=["GET", "POST"])
 def session_new(client_id):
     client = db.get_client(client_id)
-    if not client:
+    if not _owns_client(client):
         return redirect(url_for("index"))
 
     if request.method == "POST":
@@ -117,11 +189,14 @@ def session_new(client_id):
 
 @app.route("/sessions/<int:session_id>")
 def session_detail(session_id):
-    session = db.get_session(session_id)
-    if not session:
+    sess = db.get_session(session_id)
+    if not sess:
         return redirect(url_for("index"))
 
-    client = db.get_client(session["client_id"])
+    client = db.get_client(sess["client_id"])
+    if not _owns_client(client):
+        return redirect(url_for("index"))
+
     before = db.get_evaluation(session_id, "before")
     after = db.get_evaluation(session_id, "after")
 
@@ -138,7 +213,7 @@ def session_detail(session_id):
     return render_template(
         "session_detail.html",
         client=client,
-        session=session,
+        session=sess,
         before=before_dict,
         after=after_dict,
         movements=scoring.BODY_MOVEMENTS,
@@ -153,8 +228,11 @@ def session_detail(session_id):
 
 @app.route("/sessions/<int:session_id>/update_notes", methods=["POST"])
 def session_update_notes(session_id):
-    session = db.get_session(session_id)
-    if not session:
+    sess = db.get_session(session_id)
+    if not sess:
+        return redirect(url_for("index"))
+    client = db.get_client(sess["client_id"])
+    if not _owns_client(client):
         return redirect(url_for("index"))
     notes = request.form.get("notes", "")
     exercise_notes = request.form.get("exercise_notes", "")
@@ -164,10 +242,13 @@ def session_update_notes(session_id):
 
 @app.route("/sessions/<int:session_id>/delete", methods=["POST"])
 def session_delete(session_id):
-    session = db.get_session(session_id)
-    if not session:
+    sess = db.get_session(session_id)
+    if not sess:
         return redirect(url_for("index"))
-    client_id = session["client_id"]
+    client = db.get_client(sess["client_id"])
+    if not _owns_client(client):
+        return redirect(url_for("index"))
+    client_id = sess["client_id"]
     db.delete_session(session_id)
     return redirect(url_for("client_detail", client_id=client_id))
 

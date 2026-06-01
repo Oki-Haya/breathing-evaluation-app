@@ -18,9 +18,17 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <nav class="navbar navbar-dark bg-primary">
     <div class="container">
       <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">呼吸動作評価</a>
+      {% if session.get('user_id') %}
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-white small opacity-75">{{ session.get('username') }}</span>
+        <form method="post" action="{{ url_for('logout') }}" class="m-0">
+          <button type="submit" class="btn btn-outline-light btn-sm">ログアウト</button>
+        </form>
+      </div>
+      {% endif %}
     </div>
   </nav>
 

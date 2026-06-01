@@ -12,9 +12,17 @@ if USE_POSTGRES:
 DB_PATH = Path(__file__).parent / 'breathing.db'
 
 _SCHEMA_COMMON_BODY = """
+    CREATE TABLE IF NOT EXISTS users (
+        id {serial} PRIMARY KEY,
+        username TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE TABLE IF NOT EXISTS clients (
         id {serial} PRIMARY KEY,
-        name TEXT NOT NULL UNIQUE,
+        user_id INTEGER REFERENCES users(id),
+        name TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -101,26 +109,56 @@ def init_db():
                 stmt = stmt.strip()
                 if stmt:
                     cur.execute(stmt)
-            # マイグレーション: exercise_notes カラムを追加（既存DBへの対応）
-            try:
-                cur.execute('ALTER TABLE sessions ADD COLUMN IF NOT EXISTS exercise_notes TEXT')
-            except Exception:
-                pass
+            # マイグレーション
+            for migration in [
+                'ALTER TABLE sessions ADD COLUMN IF NOT EXISTS exercise_notes TEXT',
+                'ALTER TABLE clients ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id)',
+            ]:
+                try:
+                    cur.execute(migration)
+                except Exception:
+                    pass
         else:
             conn.executescript(_SCHEMA_SQLITE)
-            # マイグレーション: exercise_notes カラムを追加（既存DBへの対応）
-            try:
-                conn.execute('ALTER TABLE sessions ADD COLUMN exercise_notes TEXT')
-            except Exception:
-                pass
+            # マイグレーション
+            for migration in [
+                'ALTER TABLE sessions ADD COLUMN exercise_notes TEXT',
+                'ALTER TABLE clients ADD COLUMN user_id INTEGER',
+            ]:
+                try:
+                    conn.execute(migration)
+                except Exception:
+                    pass
         conn.commit()
+    finally:
+        conn.close()
+
+
+# --- Users ---
+
+def create_user(username, password_hash):
+    conn = get_conn()
+    try:
+        row_id = _insert(conn,
+                         'INSERT INTO users (username, password_hash) VALUES (?, ?)',
+                         (username, password_hash))
+        conn.commit()
+        return row_id
+    finally:
+        conn.close()
+
+
+def get_user_by_username(username):
+    conn = get_conn()
+    try:
+        return _row(_exec(conn, 'SELECT * FROM users WHERE username = ?', (username,)))
     finally:
         conn.close()
 
 
 # --- Clients ---
 
-def get_all_clients():
+def get_all_clients(user_id):
     conn = get_conn()
     try:
         cur = _exec(conn, """
@@ -129,9 +167,10 @@ def get_all_clients():
                    MAX(s.session_date) AS last_session_date
             FROM clients c
             LEFT JOIN sessions s ON s.client_id = c.id
+            WHERE c.user_id = ?
             GROUP BY c.id
             ORDER BY c.name
-        """)
+        """, (user_id,))
         return _rows(cur)
     finally:
         conn.close()
@@ -145,10 +184,12 @@ def get_client(client_id):
         conn.close()
 
 
-def create_client(name):
+def create_client(name, user_id):
     conn = get_conn()
     try:
-        row_id = _insert(conn, 'INSERT INTO clients (name) VALUES (?)', (name,))
+        row_id = _insert(conn,
+                         'INSERT INTO clients (name, user_id) VALUES (?, ?)',
+                         (name, user_id))
         conn.commit()
         return row_id
     finally:
